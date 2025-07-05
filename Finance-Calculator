@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      margin: 0;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    header {
+      background: #0077cc;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .tab-button {
+      flex: 1;
+      padding: 1rem;
+      text-align: center;
+      background: #eee;
+      cursor: pointer;
+      border: 1px solid #ccc;
+    }
+    .tab-button.active {
+      background: #0077cc;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      background: white;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .calculator {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .result {
+      background: #e0ffe0;
+      padding: 1rem;
+      border-left: 5px solid green;
+    }
+    @media (max-width: 600px) {
+      .tabs {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Finance Calculator</h1>
+  </header>
+  <main>
+    <div class="tabs">
+      <div class="tab-button active" data-tab="emi">EMI</div>
+      <div class="tab-button" data-tab="sip">SIP</div>
+      <div class="tab-button" data-tab="fd">FD</div>
+      <div class="tab-button" data-tab="rd">RD</div>
+      <div class="tab-button" data-tab="lumpsum">Lumpsum</div>
+    </div>
+
+    <div class="tab-content active" id="emi">
+      <h2>EMI Calculator</h2>
+      <div class="calculator">
+        <input type="number" id="loan" placeholder="Loan Amount" />
+        <input type="number" id="rate" placeholder="Annual Interest Rate (%)" />
+        <input type="number" id="tenure" placeholder="Loan Tenure (Months)" />
+        <button onclick="calculateEMI()">Calculate EMI</button>
+        <div class="result" id="emi-result"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="sip">
+      <h2>SIP Calculator</h2>
+      <div class="calculator">
+        <input type="number" id="sip-amount" placeholder="Monthly Investment" />
+        <input type="number" id="sip-rate" placeholder="Annual Return Rate (%)" />
+        <input type="number" id="sip-time" placeholder="Time Period (Years)" />
+        <button onclick="calculateSIP()">Calculate SIP</button>
+        <div class="result" id="sip-result"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="fd">
+      <h2>FD Calculator</h2>
+      <div class="calculator">
+        <input type="number" id="fd-principal" placeholder="Principal Amount" />
+        <input type="number" id="fd-rate" placeholder="Annual Interest Rate (%)" />
+        <input type="number" id="fd-tenure" placeholder="Tenure (Years)" />
+        <button onclick="calculateFD()">Calculate FD</button>
+        <div class="result" id="fd-result"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="rd">
+      <h2>RD Calculator</h2>
+      <div class="calculator">
+        <input type="number" id="rd-monthly" placeholder="Monthly Deposit" />
+        <input type="number" id="rd-rate" placeholder="Interest Rate (%)" />
+        <input type="number" id="rd-time" placeholder="Duration (Months)" />
+        <button onclick="calculateRD()">Calculate RD</button>
+        <div class="result" id="rd-result"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="lumpsum">
+      <h2>Lumpsum Investment Calculator</h2>
+      <div class="calculator">
+        <input type="number" id="lump-amount" placeholder="Investment Amount" />
+        <input type="number" id="lump-rate" placeholder="Annual Return Rate (%)" />
+        <input type="number" id="lump-time" placeholder="Time Period (Years)" />
+        <button onclick="calculateLumpsum()">Calculate</button>
+        <div class="result" id="lump-result"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Tab logic
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const tabContents = document.querySelectorAll(".tab-content");
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabButtons.forEach(b => b.classList.remove("active"));
+        tabContents.forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    // EMI Calculator
+    function calculateEMI() {
+      let P = parseFloat(document.getElementById("loan").value);
+      let annualRate = parseFloat(document.getElementById("rate").value);
+      let n = parseFloat(document.getElementById("tenure").value);
+      let r = annualRate / 12 / 100;
+      let emi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+      let total = emi * n;
+      let interest = total - P;
+      document.getElementById("emi-result").innerHTML = `EMI: PKR ${emi.toFixed(2)}<br>Total Interest: PKR ${interest.toFixed(2)}<br>Total Payment: PKR ${total.toFixed(2)}`;
+    }
+
+    // SIP Calculator
+    function calculateSIP() {
+      let monthly = parseFloat(document.getElementById("sip-amount").value);
+      let rate = parseFloat(document.getElementById("sip-rate").value) / 12 / 100;
+      let months = parseFloat(document.getElementById("sip-time").value) * 12;
+      let maturity = monthly * ((Math.pow(1 + rate, months) - 1) * (1 + rate)) / rate;
+      let invested = monthly * months;
+      let gain = maturity - invested;
+      document.getElementById("sip-result").innerHTML = `Invested: PKR ${invested.toFixed(2)}<br>Wealth Gained: PKR ${gain.toFixed(2)}<br>Maturity Amount: PKR ${maturity.toFixed(2)}`;
+    }
+
+    // FD Calculator
+    function calculateFD() {
+      let principal = parseFloat(document.getElementById("fd-principal").value);
+      let rate = parseFloat(document.getElementById("fd-rate").value) / 100;
+      let time = parseFloat(document.getElementById("fd-tenure").value);
+      let maturity = principal * Math.pow(1 + rate / 1, 1 * time);
+      let interest = maturity - principal;
+      document.getElementById("fd-result").innerHTML = `Maturity: PKR ${maturity.toFixed(2)}<br>Interest Earned: PKR ${interest.toFixed(2)}`;
+    }
+
+    // RD Calculator
+    function calculateRD() {
+      let monthly = parseFloat(document.getElementById("rd-monthly").value);
+      let rate = parseFloat(document.getElementById("rd-rate").value) / 100 / 4;
+      let n = parseFloat(document.getElementById("rd-time").value);
+      let maturity = monthly * n + monthly * n * (n + 1) / 2 * rate / 3;
+      let interest = maturity - monthly * n;
+      document.getElementById("rd-result").innerHTML = `Maturity: PKR ${maturity.toFixed(2)}<br>Interest Earned: PKR ${interest.toFixed(2)}`;
+    }
+
+    // Lumpsum Calculator
+    function calculateLumpsum() {
+      let principal = parseFloat(document.getElementById("lump-amount").value);
+      let rate = parseFloat(document.getElementById("lump-rate").value) / 100;
+      let time = parseFloat(document.getElementById("lump-time").value);
+      let maturity = principal * Math.pow(1 + rate, time);
+      let gain = maturity - principal;
+      document.getElementById("lump-result").innerHTML = `Future Value: PKR ${maturity.toFixed(2)}<br>Wealth Gained: PKR ${gain.toFixed(2)}`;
+    }
+  </script>
+</body>
+</html>
