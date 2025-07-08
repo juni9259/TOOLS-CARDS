@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Advanced Net Worth Calculator - Track and calculate your total net worth with detailed breakdowns and financial insights">
+    <meta name="keywords" content="net worth calculator, financial calculator, assets, liabilities, personal finance, wealth tracker">
+    <title>Advanced Net Worth Calculator | Financial Wealth Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --dark: #2b2d42;
+            --light: #f8f9fa;
+            --danger: #e63946;
+            --warning: #fca311;
+            --info: #4895ef;
+            --asset: #2a9d8f;
+            --liability: #e76f51;
+            --background: #edf2f4;
+            --card-bg: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--background) 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            color: #4a5568;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 20px var(--shadow);
+            padding: 25px;
+            transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            color: var(--dark);
+        }
+
+        .card-title i {
+            margin-right: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 10px;
+            top: 40px;
+            color: #718096;
+        }
+
+        .input-with-icon {
+            padding-left: 30px !important;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .summary-card {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .summary-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .summary-item {
+            padding: 20px;
+            border-radius: var(--border-radius);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-item h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .summary-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .assets-summary {
+            background: linear-gradient(135deg, var(--asset), #1a936f);
+        }
+
+        .liabilities-summary {
+            background: linear-gradient(135deg, var(--liability), #d45d44);
+        }
+
+        .net-worth-summary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .items-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            transition: var(--transition);
+            border-left: 4px solid var(--asset);
+        }
+
+        .liability-item {
+            border-left-color: var(--liability);
+        }
+
+        .item-row:hover {
+            background: #f1f5f9;
+            transform: translateX(5px);
+        }
+
+        .item-name {
+            font-weight: 500;
+        }
+
+        .item-value {
+            font-weight: 600;
+        }
+
+        .asset-value {
+            color: var(--asset);
+        }
+
+        .liability-value {
+            color: var(--liability);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #cbd5e0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calculator"></i> Advanced Net Worth Calculator</h1>
+            <p>Track your financial health by calculating your total assets, liabilities, and net worth. Get detailed insights into your financial position.</p>
+        </header>
+
+        <div class="app-container">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="card-title"><i class="fas fa-piggy-bank"></i> Assets</h2>
+                    <button class="btn btn-primary btn-sm" id="addAsset">
+                        <i class="fas fa-plus"></i> Add Asset
+                    </button>
+                </div>
+                
+                <div class="input-group">
+                    <label for="cash">Cash & Savings</label>
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="cash" class="input-with-icon" placeholder="0.00" value="12500">
+                </div>
+                
+                <div class="input-group">
+                    <label for="investments">Investments</label>
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="investments" class="input-with-icon" placeholder="0.00" value="48500">
+                </div>
+                
+                <div class="input-group">
+                    <label for="realEstate">Real Estate</label>
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="realEstate" class="input-with-icon" placeholder="0.00" value="325000">
+                </div>
+                
+                <div id="customAssets">
+                    <!-- Dynamic assets will be added here -->
+                </div>
+                
+                <h3 class="card-title" style="margin-top: 25px;"><i class="fas fa-list"></i> Your Assets</h3>
+                <div class="items-list" id="assetsList">
+                    <div class="item-row">
+                        <span class="item-name">Cash & Savings</span>
+                        <span class="item-value asset-value">$12,500</span>
+                    </div>
+                    <div class="item-row">
+                        <span class="item-name">Investment Portfolio</span>
+                        <span class="item-value asset-value">$48,500</span>
+                    </div>
+                    <div class="item-row">
+                        <span class="item-name">Primary Residence</span>
+                        <span class="item-value asset-value">$325,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="card-title"><i class="fas fa-credit-card"></i> Liabilities</h2>
+                    <button class="btn btn-primary btn-sm" id="addLiability">
+                        <i class="fas fa-plus"></i> Add Liability
+                    </button>
+                </div>
+                
+                <div class="input-group">
+                    <label for="mortgage">Mortgage</label>
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="mortgage" class="input-with-icon" placeholder="0.00" value="215000">
+                </div>
+                
+                <div class="input-group">
+                    <label for="carLoan">Car Loan</label>
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="carLoan" class="input-with-icon" placeholder="0.00" value="12500">
+                </div>
+                
+                <div class="input-group">
+                    <label for="creditCard">Credit Card Debt</label>
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="creditCard" class="input-with-icon" placeholder="0.00" value="4500">
+                </div>
+                
+                <div id="customLiabilities">
+                    <!-- Dynamic liabilities will be added here -->
+                </div>
+                
+                <h3 class="card-title" style="margin-top: 25px;"><i class="fas fa-list"></i> Your Liabilities</h3>
+                <div class="items-list" id="liabilitiesList">
+                    <div class="item-row liability-item">
+                        <span class="item-name">Home Mortgage</span>
+                        <span class="item-value liability-value">$215,000</span>
+                    </div>
+                    <div class="item-row liability-item">
+                        <span class="item-name">Auto Loan</span>
+                        <span class="item-value liability-value">$12,500</span>
+                    </div>
+                    <div class="item-row liability-item">
+                        <span class="item-name">Credit Cards</span>
+                        <span class="item-value liability-value">$4,500</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-item assets-summary">
+                    <h3><i class="fas fa-wallet"></i> Total Assets</h3>
+                    <div class="summary-value" id="totalAssets">$386,000</div>
+                    <p>All your valuable possessions</p>
+                </div>
+                
+                <div class="summary-item liabilities-summary">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> Total Liabilities</h3>
+                    <div class="summary-value" id="totalLiabilities">$232,000</div>
+                    <p>All your outstanding debts</p>
+                </div>
+                
+                <div class="summary-item net-worth-summary">
+                    <h3><i class="fas fa-chart-line"></i> Net Worth</h3>
+                    <div class="summary-value" id="netWorth">$154,000</div>
+                    <p>Your true financial position</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-chart-pie"></i> Assets Breakdown</h2>
+                <div class="chart-container">
+                    <canvas id="assetsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-chart-pie"></i> Liabilities Breakdown</h2>
+                <div class="chart-container">
+                    <canvas id="liabilitiesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-primary" id="calculateBtn">
+                <i class="fas fa-calculator"></i> Calculate Net Worth
+            </button>
+            <button class="btn btn-outline" id="resetBtn">
+                <i class="fas fa-redo"></i> Reset Calculator
+            </button>
+            <button class="btn btn-outline" id="saveBtn">
+                <i class="fas fa-download"></i> Save Report
+            </button>
+        </div>
+
+        <footer>
+            <p>Advanced Net Worth Calculator &copy; 2023 | Track your financial health with precision</p>
+            <p>Note: All data is processed locally in your browser and not stored on any server.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts
+            const assetsCtx = document.getElementById('assetsChart').getContext('2d');
+            const liabilitiesCtx = document.getElementById('liabilitiesChart').getContext('2d');
+            
+            const assetsChart = new Chart(assetsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cash & Savings', 'Investments', 'Real Estate'],
+                    datasets: [{
+                        data: [12500, 48500, 325000],
+                        backgroundColor: [
+                            '#2a9d8f',
+                            '#4cc9f0',
+                            '#4895ef'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.raw || 0;
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = Math.round((value / total) * 100);
+                                    return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const liabilitiesChart = new Chart(liabilitiesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mortgage', 'Car Loan', 'Credit Card'],
+                    datasets: [{
+                        data: [215000, 12500, 4500],
+                        backgroundColor: [
+                            '#e76f51',
+                            '#fca311',
+                            '#e63946'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.raw || 0;
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = Math.round((value / total) * 100);
+                                    return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Event listeners
+            document.getElementById('calculateBtn').addEventListener('click', calculateNetWorth);
+            document.getElementById('resetBtn').addEventListener('click', resetCalculator);
+            document.getElementById('saveBtn').addEventListener('click', saveReport);
+            
+            // Add asset/liability buttons
+            document.getElementById('addAsset').addEventListener('click', function() {
+                addCustomItem('asset');
+            });
+            
+            document.getElementById('addLiability').addEventListener('click', function() {
+                addCustomItem('liability');
+            });
+            
+            // Input change listeners
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                input.addEventListener('input', calculateNetWorth);
+            });
+            
+            // Initialize calculation
+            calculateNetWorth();
+            
+            // Functions
+            function calculateNetWorth() {
+                // Get asset values
+                const cash = parseFloat(document.getElementById('cash').value) || 0;
+                const investments = parseFloat(document.getElementById('investments').value) || 0;
+                const realEstate = parseFloat(document.getElementById('realEstate').value) || 0;
+                
+                // Get liability values
+                const mortgage = parseFloat(document.getElementById('mortgage').value) || 0;
+                const carLoan = parseFloat(document.getElementById('carLoan').value) || 0;
+                const creditCard = parseFloat(document.getElementById('creditCard').value) || 0;
+                
+                // Calculate totals
+                const totalAssets = cash + investments + realEstate;
+                const totalLiabilities = mortgage + carLoan + creditCard;
+                const netWorth = totalAssets - totalLiabilities;
+                
+                // Update display
+                document.getElementById('totalAssets').textContent = formatCurrency(totalAssets);
+                document.getElementById('totalLiabilities').textContent = formatCurrency(totalLiabilities);
+                document.getElementById('netWorth').textContent = formatCurrency(netWorth);
+                
+                // Update charts
+                assetsChart.data.datasets[0].data = [cash, investments, realEstate];
+                liabilitiesChart.data.datasets[0].data = [mortgage, carLoan, creditCard];
+                assetsChart.update();
+                liabilitiesChart.update();
+                
+                // Update item lists
+                document.querySelectorAll('#assetsList .item-row')[0].querySelector('.item-value').textContent = formatCurrency(cash);
+                document.querySelectorAll('#assetsList .item-row')[1].querySelector('.item-value').textContent = formatCurrency(investments);
+                document.querySelectorAll('#assetsList .item-row')[2].querySelector('.item-value').textContent = formatCurrency(realEstate);
+                
+                document.querySelectorAll('#liabilitiesList .item-row')[0].querySelector('.item-value').textContent = formatCurrency(mortgage);
+                document.querySelectorAll('#liabilitiesList .item-row')[1].querySelector('.item-value').textContent = formatCurrency(carLoan);
+                document.querySelectorAll('#liabilitiesList .item-row')[2].querySelector('.item-value').textContent = formatCurrency(creditCard);
+            }
+            
+            function resetCalculator() {
+                if(confirm('Are you sure you want to reset all values?')) {
+                    document.getElementById('cash').value = '';
+                    document.getElementById('investments').value = '';
+                    document.getElementById('realEstate').value = '';
+                    document.getElementById('mortgage').value = '';
+                    document.getElementById('carLoan').value = '';
+                    document.getElementById('creditCard').value = '';
+                    
+                    // Clear custom items
+                    document.getElementById('customAssets').innerHTML = '';
+                    document.getElementById('customLiabilities').innerHTML = '';
+                    
+                    calculateNetWorth();
+                }
+            }
+            
+            function saveReport() {
+                alert('Report saved! (In a real application, this would generate a PDF report)');
+            }
+            
+            function addCustomItem(type) {
+                const containerId = type === 'asset' ? 'customAssets' : 'customLiabilities';
+                const container = document.getElementById(containerId);
+                
+                const id = 'custom_' + Date.now();
+                
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group';
+                inputGroup.innerHTML = `
+                    <div class="input-group-header">
+                        <label for="${id}">Custom ${type.charAt(0).toUpperCase() + type.slice(1)}</label>
+                        <button class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove(); calculateNetWorth();">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="${id}" class="input-with-icon" placeholder="0.00" oninput="calculateNetWorth()">
+                `;
+                
+                container.appendChild(inputGroup);
+            }
+            
+            function formatCurrency(amount) {
+                return '$' + amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        });
+    </script>
+</body>
+</html>
