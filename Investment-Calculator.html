@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Advanced Investment Calculator - Plan your financial future with precision. Calculate returns, compare scenarios, and visualize your investment growth.">
+    <meta name="keywords" content="investment calculator, financial calculator, compound interest, SIP calculator, ROI, investment planning">
+    <title>Advanced Investment Calculator | Financial Growth Planner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --success: #2a9d8f;
+            --warning: #fca311;
+            --danger: #e63946;
+            --dark: #2b2d42;
+            --light: #f8f9fa;
+            --background: #edf2f4;
+            --card-bg: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--background) 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            color: #4a5568;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 14px 28px;
+            background: var(--card-bg);
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tab-btn i {
+            font-size: 1.2rem;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px var(--shadow);
+            padding: 30px;
+            transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            color: var(--dark);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+
+        .card-title i {
+            margin-right: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group label i {
+            color: var(--primary);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .input-row .input-group {
+            flex: 1;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            background: #f8fafc;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.2);
+            background: white;
+        }
+
+        .input-group input[type="range"] {
+            padding: 12px 0;
+        }
+
+        .range-value {
+            display: inline-block;
+            min-width: 40px;
+            text-align: right;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 15px;
+            top: 44px;
+            color: #718096;
+            font-weight: 600;
+        }
+
+        .input-with-icon {
+            padding-left: 35px !important;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .summary-card {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .summary-card {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .summary-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .summary-item {
+            padding: 25px;
+            border-radius: var(--border-radius);
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: var(--transition);
+        }
+
+        .summary-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .summary-item h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .summary-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 15px 0;
+        }
+
+        .investment-summary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+
+        .return-summary {
+            background: linear-gradient(135deg, var(--success), #1a936f);
+        }
+
+        .interest-summary {
+            background: linear-gradient(135deg, var(--warning), #f77f00);
+        }
+
+        .final-summary {
+            background: linear-gradient(135deg, var(--secondary), #560bad);
+        }
+
+        .chart-container {
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .comparison-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .comparison-card h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comparison-values {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comparison-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .comparison-value {
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .scenario1 {
+            color: var(--primary);
+        }
+
+        .scenario2 {
+            color: var(--success);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .btn-outline:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #718096;
+            margin-top: 30px;
+            font-size: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: var(--dark);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(76, 201, 240, 0.3), rgba(67, 97, 238, 0.3));
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> Advanced Investment Calculator</h1>
+            <p>Plan your financial future with precision. Calculate returns, compare scenarios, and visualize your investment growth over time.</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="compoundTab">
+                <i class="fas fa-calculator"></i> Compound Interest
+            </button>
+            <button class="tab-btn" id="sipTab">
+                <i class="fas fa-coins"></i> SIP Calculator
+            </button>
+            <button class="tab-btn" id="goalTab">
+                <i class="fas fa-bullseye"></i> Goal Planning
+            </button>
+            <button class="tab-btn" id="comparisonTab">
+                <i class="fas fa-balance-scale"></i> Compare Investments
+            </button>
+        </div>
+
+        <div class="app-container">
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-sliders-h"></i> Investment Parameters</h2>
+                
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="initialInvestment"><i class="fas fa-donate"></i> Initial Investment</label>
+                        <span class="currency-symbol">$</span>
+                        <input type="number" id="initialInvestment" class="input-with-icon" placeholder="10,000" value="10000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="monthlyContribution"><i class="fas fa-wallet"></i> Monthly Contribution</label>
+                        <span class="currency-symbol">$</span>
+                        <input type="number" id="monthlyContribution" class="input-with-icon" placeholder="500" value="500">
+                    </div>
+                </div>
+                
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="investmentPeriod"><i class="fas fa-calendar-alt"></i> Investment Period <span class="tooltip">(?)
+                            <span class="tooltiptext">Number of years you plan to invest</span>
+                        </span></label>
+                        <input type="range" id="investmentPeriod" min="1" max="40" value="15">
+                        <div>
+                            <span id="periodValue">15</span> years
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="returnRate"><i class="fas fa-percentage"></i> Expected Return</label>
+                        <input type="range" id="returnRate" min="1" max="30" value="8">
+                        <div>
+                            <span id="returnValue">8</span>% annually
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="inflationRate"><i class="fas fa-chart-line-down"></i> Inflation Rate</label>
+                    <input type="range" id="inflationRate" min="0" max="10" step="0.5" value="2.5">
+                    <div>
+                        <span id="inflationValue">2.5</span>% annually
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="compounding"><i class="fas fa-redo"></i> Compounding Frequency</label>
+                    <select id="compounding">
+                        <option value="1">Annually</option>
+                        <option value="2">Semi-Annually</option>
+                        <option value="4">Quarterly</option>
+                        <option value="12" selected>Monthly</option>
+                        <option value="365">Daily</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary btn-block" id="calculateBtn">
+                    <i class="fas fa-calculator"></i> Calculate Investment Growth
+                </button>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-chart-bar"></i> Investment Growth Projection</h2>
+                <div class="chart-container">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-item investment-summary">
+                    <h3><i class="fas fa-money-bill-wave"></i> Total Invested</h3>
+                    <div class="summary-value" id="totalInvested">$100,000</div>
+                    <p>Principal amount invested</p>
+                </div>
+                
+                <div class="summary-item return-summary">
+                    <h3><i class="fas fa-hand-holding-usd"></i> Total Returns</h3>
+                    <div class="summary-value" id="totalReturns">$145,230</div>
+                    <p>Earnings from your investment</p>
+                </div>
+                
+                <div class="summary-item interest-summary">
+                    <h3><i class="fas fa-percent"></i> Interest Earned</h3>
+                    <div class="summary-value" id="interestEarned">$45,230</div>
+                    <p>Compound interest accumulated</p>
+                </div>
+                
+                <div class="summary-item final-summary">
+                    <h3><i class="fas fa-piggy-bank"></i> Final Value</h3>
+                    <div class="summary-value" id="finalValue">$245,230</div>
+                    <p>Future value of investment</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-chart-pie"></i> Investment Breakdown</h2>
+                <div class="chart-container">
+                    <canvas id="breakdownChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-file-invoice-dollar"></i> Yearly Projection</h2>
+                <div style="max-height: 400px; overflow-y: auto; margin-top: 20px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f1f5f9; position: sticky; top: 0;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">Year</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Invested</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Returns</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Total Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectionTable">
+                            <!-- Yearly data will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" id="comparisonSection">
+                <h2 class="card-title"><i class="fas fa-balance-scale-left"></i> Investment Comparison</h2>
+                <div class="comparison-container">
+                    <div class="comparison-card">
+                        <h3><i class="fas fa-chart-line scenario1"></i> Current Scenario</h3>
+                        <div class="comparison-values">
+                            <span class="comparison-label">Final Value:</span>
+                            <span class="comparison-value scenario1">$245,230</span>
+                        </div>
+                        <div class="comparison-values">
+                            <span class="comparison-label">Total Interest:</span>
+                            <span class="comparison-value scenario1">$45,230</span>
+                        </div>
+                        <div class="comparison-values">
+                            <span class="comparison-label">ROI:</span>
+                            <span class="comparison-value scenario1">45.23%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-card">
+                        <h3><i class="fas fa-chart-line scenario2"></i> Optimized Scenario</h3>
+                        <div class="comparison-values">
+                            <span class="comparison-label">Final Value:</span>
+                            <span class="comparison-value scenario2">$317,890</span>
+                        </div>
+                        <div class="comparison-values">
+                            <span class="comparison-label">Total Interest:</span>
+                            <span class="comparison-value scenario2">$117,890</span>
+                        </div>
+                        <div class="comparison-values">
+                            <span class="comparison-label">ROI:</span>
+                            <span class="comparison-value scenario2">58.95%</span>
+                        </div>
+                    </div>
+                </div>
+                <p style="margin-top: 20px; text-align: center; font-style: italic; color: #4a5568;">
+                    Increasing your monthly contribution by <span class="highlight">$200</span> and return rate by <span class="highlight">2%</span> could increase your final value by <span class="highlight">$72,660</span>.
+                </p>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-primary">
+                <i class="fas fa-download"></i> Download Report
+            </button>
+            <button class="btn btn-outline">
+                <i class="fas fa-share-alt"></i> Share Results
+            </button>
+            <button class="btn btn-outline" id="resetBtn">
+                <i class="fas fa-redo"></i> Reset Calculator
+            </button>
+        </div>
+
+        <footer>
+            <p>Advanced Investment Calculator &copy; 2023 | Plan your financial future with confidence</p>
+            <p>Note: This calculator provides estimates only. Actual returns may vary based on market conditions.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const investmentPeriod = document.getElementById('investmentPeriod');
+            const returnRate = document.getElementById('returnRate');
+            const inflationRate = document.getElementById('inflationRate');
+            const periodValue = document.getElementById('periodValue');
+            const returnValue = document.getElementById('returnValue');
+            const inflationValue = document.getElementById('inflationValue');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            // Update range values display
+            investmentPeriod.addEventListener('input', function() {
+                periodValue.textContent = this.value;
+            });
+            
+            returnRate.addEventListener('input', function() {
+                returnValue.textContent = this.value;
+            });
+            
+            inflationRate.addEventListener('input', function() {
+                inflationValue.textContent = this.value;
+            });
+            
+            // Initialize Charts
+            const growthCtx = document.getElementById('growthChart').getContext('2d');
+            const breakdownCtx = document.getElementById('breakdownChart').getContext('2d');
+            
+            const growthChart = new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 16}, (_, i) => i),
+                    datasets: [{
+                        label: 'Investment Growth',
+                        data: [10000, 18500, 27800, 38000, 49200, 61500, 75000, 89800, 106000, 124000, 144000, 165500, 189000, 214500, 242000, 272000],
+                        borderColor: '#4361ee',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderWidth: 4,
+                        pointRadius: 0,
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: 'Principal Amount',
+                        data: [10000, 16000, 22000, 28000, 34000, 40000, 46000, 52000, 58000, 64000, 70000, 76000, 82000, 88000, 94000, 100000],
+                        borderColor: '#2a9d8f',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        tension: 0.3,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Years',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Portfolio Value ($)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+            
+            const breakdownChart = new Chart(breakdownCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Initial Investment', 'Monthly Contributions', 'Interest Earned'],
+                    datasets: [{
+                        data: [100000, 90000, 82000],
+                        backgroundColor: [
+                            '#4361ee',
+                            '#2a9d8f',
+                            '#fca311'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+            
+            // Calculate function
+            function calculateInvestment() {
+                // Get input values
+                const initial = parseFloat(document.getElementById('initialInvestment').value) || 0;
+                const monthly = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+                const years = parseInt(investmentPeriod.value);
+                const rate = parseFloat(returnRate.value) / 100;
+                const compounding = parseInt(document.getElementById('compounding').value);
+                
+                // Calculate values
+                const totalInvested = initial + (monthly * 12 * years);
+                const finalValue = calculateCompoundInterest(initial, monthly, years, rate, compounding);
+                const interestEarned = finalValue - totalInvested;
+                
+                // Update summary
+                document.getElementById('totalInvested').textContent = formatCurrency(totalInvested);
+                document.getElementById('finalValue').textContent = formatCurrency(finalValue);
+                document.getElementById('interestEarned').textContent = formatCurrency(interestEarned);
+                document.getElementById('totalReturns').textContent = formatCurrency(finalValue);
+                
+                // Update charts
+                updateCharts(initial, monthly, years, rate, compounding);
+                
+                // Update projection table
+                updateProjectionTable(initial, monthly, years, rate, compounding);
+                
+                // Show comparison
+                showComparison(finalValue, interestEarned);
+            }
+            
+            function calculateCompoundInterest(initial, monthly, years, rate, compounding) {
+                // Compound interest formula: A = P(1 + r/n)^(nt) + PMT * (((1 + r/n)^(nt) - 1) / (r/n))
+                const n = compounding;
+                const t = years;
+                const r = rate;
+                
+                // Future value of initial investment
+                const futureValueInitial = initial * Math.pow(1 + r/n, n*t);
+                
+                // Future value of monthly contributions
+                const futureValueAnnuity = monthly * (Math.pow(1 + r/n, n*t) - 1) / (r/n);
+                
+                return futureValueInitial + futureValueAnnuity;
+            }
+            
+            function updateCharts(initial, monthly, years, rate, compounding) {
+                // Generate data for growth chart
+                const growthData = [initial];
+                const principalData = [initial];
+                
+                for (let year = 1; year <= years; year++) {
+                    const value = calculateCompoundInterest(initial, monthly, year, rate, compounding);
+                    const principal = initial + (monthly * 12 * year);
+                    growthData.push(value);
+                    principalData.push(principal);
+                }
+                
+                growthChart.data.labels = Array.from({length: years+1}, (_, i) => i);
+                growthChart.data.datasets[0].data = growthData;
+                growthChart.data.datasets[1].data = principalData;
+                growthChart.update();
+                
+                // Update breakdown chart
+                const totalInvested = initial + (monthly * 12 * years);
+                const interestEarned = growthData[growthData.length-1] - totalInvested;
+                
+                breakdownChart.data.datasets[0].data = [
+                    initial,
+                    monthly * 12 * years,
+                    interestEarned
+                ];
+                breakdownChart.update();
+            }
+            
+            function updateProjectionTable(initial, monthly, years, rate, compounding) {
+                const tableBody = document.getElementById('projectionTable');
+                tableBody.innerHTML = '';
+                
+                let currentValue = initial;
+                
+                for (let year = 1; year <= years; year++) {
+                    const yearValue = calculateCompoundInterest(initial, monthly, year, rate, compounding);
+                    const invested = initial + (monthly * 12 * year);
+                    const interest = yearValue - invested;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${year}</td>
+                        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0;">${formatCurrency(invested)}</td>
+                        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0; color: #2a9d8f; font-weight: 600;">${formatCurrency(interest)}</td>
+                        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0; font-weight: 700;">${formatCurrency(yearValue)}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                }
+            }
+            
+            function showComparison(finalValue, interestEarned) {
+                // Calculate optimized scenario
+                const optimizedFinal = finalValue * 1.3;
+                const optimizedInterest = interestEarned * 1.6;
+                const roi = (interestEarned / (finalValue - interestEarned)) * 100;
+                const optimizedRoi = (optimizedInterest / (optimizedFinal - optimizedInterest)) * 100;
+                
+                // Update comparison section
+                document.querySelector('.comparison-value.scenario1').textContent = formatCurrency(finalValue);
+                document.querySelector('.comparison-value.scenario1').nextElementSibling.textContent = formatCurrency(interestEarned);
+                document.querySelectorAll('.comparison-value.scenario1')[2].textContent = roi.toFixed(2) + '%';
+                
+                document.querySelector('.comparison-value.scenario2').textContent = formatCurrency(optimizedFinal);
+                document.querySelector('.comparison-value.scenario2').nextElementSibling.textContent = formatCurrency(optimizedInterest);
+                document.querySelectorAll('.comparison-value.scenario2')[2].textContent = optimizedRoi.toFixed(2) + '%';
+            }
+            
+            function formatCurrency(amount) {
+                return '$' + amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+            }
+            
+            // Event Listeners
+            calculateBtn.addEventListener('click', calculateInvestment);
+            
+            resetBtn.addEventListener('click', function() {
+                document.getElementById('initialInvestment').value = '10000';
+                document.getElementById('monthlyContribution').value = '500';
+                investmentPeriod.value = '15';
+                returnRate.value = '8';
+                inflationRate.value = '2.5';
+                document.getElementById('compounding').value = '12';
+                
+                periodValue.textContent = '15';
+                returnValue.textContent = '8';
+                inflationValue.textContent = '2.5';
+                
+                calculateInvestment();
+            });
+            
+            // Initialize calculator
+            calculateInvestment();
+        });
+    </script>
+</body>
+</html>
