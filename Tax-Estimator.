@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Advanced Tax Estimator Tool - Calculate your tax liabilities accurately with our comprehensive calculator. Supports income tax, capital gains, deductions, and more.">
+  <title>Advanced Tax Estimator | Accurate Tax Calculations</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --secondary: #0d9488;
+      --accent: #7c3aed;
+      --light: #f8fafc;
+      --dark: #0f172a;
+      --gray: #64748b;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      color: var(--dark);
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .calculator-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .calculator-header {
+      background: var(--primary);
+      color: white;
+      padding: 1.5rem;
+    }
+    
+    .calculator-body {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 2rem;
+    }
+    
+    .input-section {
+      border-right: 1px solid #e2e8f0;
+      padding-right: 2rem;
+    }
+    
+    .results-section {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .tax-breakdown {
+      margin-top: 2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn:hover {
+      background: #1e40af;
+    }
+    
+    .btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+    
+    .tabs {
+      display: flex;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .tab {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    
+    .tab.active {
+      border-bottom: 2px solid var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .summary-item.total {
+      font-weight: 600;
+      font-size: 1.1rem;
+      border-bottom: none;
+    }
+    
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      margin-left: 0.5rem;
+      cursor: help;
+    }
+    
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 200px;
+      background-color: var(--dark);
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 0.5rem;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -100px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.875rem;
+      font-weight: normal;
+    }
+    
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .error-message {
+      color: #dc2626;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+    
+    @media (max-width: 768px) {
+      .calculator-body {
+        grid-template-columns: 1fr;
+      }
+      
+      .input-section {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="calculator-card">
+      <div class="calculator-header">
+        <h1>Advanced Tax Estimator</h1>
+        <p>Calculate your tax liabilities with precision</p>
+      </div>
+      
+      <div class="calculator-body">
+        <div class="input-section">
+          <div class="tabs">
+            <div class="tab active" data-tab="income">Income</div>
+            <div class="tab" data-tab="deductions">Deductions</div>
+            <div class="tab" data-tab="credits">Credits</div>
+          </div>
+          
+          <div id="income-tab" class="tab-content active">
+            <div class="form-group">
+              <label for="filing-status">Filing Status
+                <span class="tooltip">?
+                  <span class="tooltiptext">Your filing status affects your tax brackets and standard deduction amount</span>
+                </span>
+              </label>
+              <select id="filing-status">
+                <option value="single">Single</option>
+                <option value="married-joint">Married Filing Jointly</option>
+                <option value="married-separate">Married Filing Separately</option>
+                <option value="head-household">Head of Household</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="income">Annual Income ($)</label>
+              <input type="number" id="income" placeholder="Enter your gross income">
+              <div id="income-error" class="error-message"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="country">Country</label>
+              <select id="country">
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="UK">United Kingdom</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+              </select>
+            </div>
+            
+            <div class="form-group" id="state-group">
+              <label for="state">State/Province</label>
+              <select id="state">
+                <option value="">Select State/Province</option>
+                <!-- US States -->
+                <option value="CA" data-country="US">California</option>
+                <option value="TX" data-country="US">Texas</option>
+                <option value="NY" data-country="US">New York</option>
+                <option value="FL" data-country="US">Florida</option>
+                <option value="IL" data-country="US">Illinois</option>
+                <!-- Canadian Provinces -->
+                <option value="ON" data-country="CA">Ontario</option>
+                <option value="QC" data-country="CA">Quebec</option>
+                <option value="BC" data-country="CA">British Columbia</option>
+                <!-- UK Regions -->
+                <option value="ENG" data-country="UK">England</option>
+                <option value="SCT" data-country="UK">Scotland</option>
+                <!-- Australian States -->
+                <option value="NSW" data-country="AU">New South Wales</option>
+                <option value="VIC" data-country="AU">Victoria</option>
+                <!-- German States -->
+                <option value="BY" data-country="DE">Bavaria</option>
+                <option value="NW" data-country="DE">North Rhine-Westphalia</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="deductions-tab" class="tab-content">
+            <div class="form-group">
+              <label for="deduction-type">Deduction Type</label>
+              <select id="deduction-type">
+                <option value="standard">Standard Deduction</option>
+                <option value="itemized">Itemized Deductions</option>
+              </select>
+            </div>
+            
+            <div class="form-group" id="itemized-group" style="display: none;">
+              <label for="mortgage-interest">Mortgage Interest ($)</label>
+              <input type="number" id="mortgage-interest" value="0">
+              
+              <label for="charitable-contributions">Charitable Contributions ($)</label>
+              <input type="number" id="charitable-contributions" value="0">
+              
+              <label for="medical-expenses">Medical Expenses ($)</label>
+              <input type="number" id="medical-expenses" value="0">
+              
+              <label for="state-local-taxes">State/Local Taxes ($)</label>
+              <input type="number" id="state-local-taxes" value="0">
+            </div>
+          </div>
+          
+          <div id="credits-tab" class="tab-content">
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="child-tax-credit">
+                Child Tax Credit
+              </label>
+              
+              <label>
+                <input type="checkbox" id="education-credit">
+                Education Credit
+              </label>
+              
+              <label>
+                <input type="checkbox" id="retirement-contributions">
+                Retirement Contributions
+              </label>
+            </div>
+          </div>
+          
+          <button class="btn" id="calculate-btn">Calculate Tax</button>
+        </div>
+        
+        <div class="results-section">
+          <h2>Your Tax Estimate</h2>
+          <div class="tax-summary">
+            <div class="summary-item">
+              <span>Estimated Federal Tax:</span>
+              <span id="federal-tax">$0.00</span>
+            </div>
+            <div class="summary-item">
+              <span>Estimated State Tax:</span>
+              <span id="state-tax">$0.00</span>
+            </div>
+            <div class="summary-item">
+              <span>Tax Credits:</span>
+              <span id="tax-credits">$0.00</span>
+            </div>
+            <div class="summary-item total">
+              <span>Total Estimated Tax:</span>
+              <span id="total-tax">$0.00</span>
+            </div>
+            <div class="summary-item">
+              <span>Effective Tax Rate:</span>
+              <span id="tax-rate">0%</span>
+            </div>
+            <div class="summary-item">
+              <span>After-Tax Income:</span>
+              <span id="after-tax-income">$0.00</span>
+            </div>
+          </div>
+          
+          <div class="tax-breakdown">
+            <h3>Tax Breakdown</h3>
+            <canvas id="taxChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize variables
+      let taxChart = null;
+      
+      // Tab functionality
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs and content
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          
+          // Add active class to clicked tab and corresponding content
+          this.classList.add('active');
+          const tabId = this.getAttribute('data-tab') + '-tab';
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // Country-State relationship
+      const countrySelect = document.getElementById('country');
+      const stateSelect = document.getElementById('state');
+      
+      countrySelect.addEventListener('change', function() {
+        const selectedCountry = this.value;
+        
+        // Enable/disable state select
+        stateSelect.disabled = selectedCountry === '';
+        
+        // Filter states based on country
+        Array.from(stateSelect.options).forEach(option => {
+          if (option.value === '') return; // Keep the "Select State" option
+          
+          const country = option.getAttribute('data-country');
+          if (country === selectedCountry) {
+            option.style.display = '';
+          } else {
+            option.style.display = 'none';
+          }
+        });
+        
+        // Reset state selection
+        stateSelect.value = '';
+      });
+      
+      // Deduction type toggle
+      const deductionType = document.getElementById('deduction-type');
+      const itemizedGroup = document.getElementById('itemized-group');
+      
+      deductionType.addEventListener('change', function() {
+        if (this.value === 'itemized') {
+          itemizedGroup.style.display = 'block';
+        } else {
+          itemizedGroup.style.display = 'none';
+        }
+      });
+      
+      // Calculate button
+      const calculateBtn = document.getElementById('calculate-btn');
+      const incomeInput = document.getElementById('income');
+      const incomeError = document.getElementById('income-error');
+      
+      calculateBtn.addEventListener('click', calculateTax);
+      incomeInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+          calculateTax();
+        }
+      });
+      
+      // Main calculation function
+      function calculateTax() {
+        // Validate input
+        const income = parseFloat(incomeInput.value);
+        if (isNaN(income) || income < 0) {
+          incomeError.textContent = 'Please enter a valid income amount';
+          return;
+        } else {
+          incomeError.textContent = '';
+        }
+        
+        // Get form values
+        const filingStatus = document.getElementById('filing-status').value;
+        const country = document.getElementById('country').value;
+        const state = document.getElementById('state').value;
+        const deductionType = document.getElementById('deduction-type').value;
+        
+        // Calculate deductions
+        let deductions = 0;
+        if (deductionType === 'standard') {
+          deductions = getStandardDeduction(filingStatus);
+        } else {
+          deductions = calculateItemizedDeductions();
+        }
+        
+        // Calculate taxable income
+        const taxableIncome = Math.max(0, income - deductions);
+        
+        // Calculate taxes
+        let federalTax = calculateFederalTax(taxableIncome, filingStatus);
+        let stateTax = calculateStateTax(taxableIncome, state, country);
+        
+        // Apply credits
+        let credits = calculateCredits();
+        credits = Math.min(credits, federalTax); // Credits can't reduce tax below 0
+        
+        // Calculate totals
+        const totalTax = federalTax + stateTax - credits;
+        const effectiveRate = (totalTax / income) * 100;
+        const afterTaxIncome = income - totalTax;
+        
+        // Update UI
+        document.getElementById('federal-tax').textContent = formatCurrency(federalTax);
+        document.getElementById('state-tax').textContent = formatCurrency(stateTax);
+        document.getElementById('tax-credits').textContent = formatCurrency(credits);
+        document.getElementById('total-tax').textContent = formatCurrency(totalTax);
+        document.getElementById('tax-rate').textContent = effectiveRate.toFixed(1) + '%';
+        document.getElementById('after-tax-income').textContent = formatCurrency(afterTaxIncome);
+        
+        updateChart(income, federalTax, stateTax, credits);
+      }
+      
+      // Tax calculation functions
+      function getStandardDeduction(filingStatus) {
+        // 2023 standard deductions (USD)
+        switch(filingStatus) {
+          case 'single': return 13850;
+          case 'married-joint': return 27700;
+          case 'married-separate': return 13850;
+          case 'head-household': return 20800;
+          default: return 13850;
+        }
+      }
+      
+      function calculateItemizedDeductions() {
+        const mortgageInterest = parseFloat(document.getElementById('mortgage-interest').value) || 0;
+        const charitableContributions = parseFloat(document.getElementById('charitable-contributions').value) || 0;
+        const medicalExpenses = parseFloat(document.getElementById('medical-expenses').value) || 0;
+        const stateLocalTaxes = parseFloat(document.getElementById('state-local-taxes').value) || 0;
+        
+        // SALT cap (state and local tax deduction limit)
+        const saltDeduction = Math.min(stateLocalTaxes, 10000);
+        
+        return mortgageInterest + charitableContributions + medicalExpenses + saltDeduction;
+      }
+      
+      function calculateFederalTax(income, filingStatus) {
+        // 2023 US federal tax brackets (simplified)
+        let brackets, rates;
+        
+        switch(filingStatus) {
+          case 'single':
+            brackets = [0, 10275, 41775, 89075, 170050, 215950, 539900];
+            rates = [0.10, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37];
+            break;
+          case 'married-joint':
+            brackets = [0, 20550, 83550, 178150, 340100, 431900, 647850];
+            rates = [0.10, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37];
+            break;
+          case 'married-separate':
+            brackets = [0, 10275, 41775, 89075, 170050, 215950, 323925];
+            rates = [0.10, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37];
+            break;
+          case 'head-household':
+            brackets = [0, 14650, 55900, 89050, 170050, 215950, 539900];
+            rates = [0.10, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37];
+            break;
+          default:
+            brackets = [0, 10275, 41775, 89075, 170050, 215950, 539900];
+            rates = [0.10, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37];
+        }
+        
+        let tax = 0;
+        for (let i = 1; i < brackets.length; i++) {
+          if (income > brackets[i]) {
+            tax += (brackets[i] - brackets[i-1]) * rates[i-1];
+          } else {
+            tax += (income - brackets[i-1]) * rates[i-1];
+            break;
+          }
+        }
+        
+        return tax;
+      }
+      
+      function calculateStateTax(income, state, country) {
+        // Simplified state/province tax calculations
+        if (country !== 'US') {
+          // For non-US countries, we'll use flat rates for simplicity
+          switch(country) {
+            case 'CA': return income * 0.10; // Canada average
+            case 'UK': return income * 0.20; // UK basic rate
+            case 'AU': return income * 0.15; // Australia average
+            case 'DE': return income * 0.20; // Germany average
+            default: return 0;
+          }
+        }
+        
+        // US state taxes
+        switch(state) {
+          case 'CA': return income * 0.093; // California
+          case 'TX': return 0; // Texas (no state income tax)
+          case 'NY': return income * 0.088; // New York
+          case 'FL': return 0; // Florida (no state income tax)
+          case 'IL': return income * 0.0495; // Illinois flat tax
+          default: return income * 0.05; // Default rate for other states
+        }
+      }
+      
+      function calculateCredits() {
+        let credits = 0;
+        
+        // Child Tax Credit (up to $2,000 per child)
+        if (document.getElementById('child-tax-credit').checked) {
+          credits += 2000;
+        }
+        
+        // Education Credit (simplified)
+        if (document.getElementById('education-credit').checked) {
+          credits += 2500;
+        }
+        
+        // Retirement Contributions (simplified)
+        if (document.getElementById('retirement-contributions').checked) {
+          credits += 1000;
+        }
+        
+        return credits;
+      }
+      
+      // Helper functions
+      function formatCurrency(amount) {
+        return '$' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+      }
+      
+      function updateChart(income, federalTax, stateTax, credits) {
+        const ctx = document.getElementById('taxChart').getContext('2d');
+        const takeHomePay = income - federalTax - stateTax + credits;
+        
+        if (taxChart) {
+          taxChart.destroy();
+        }
+        
+        taxChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Federal Tax', 'State Tax', 'Tax Credits', 'Take Home Pay'],
+            datasets: [{
+              data: [federalTax, stateTax, credits, takeHomePay],
+              backgroundColor: [
+                '#1e3a8a', // Federal tax
+                '#0d9488', // State tax
+                '#7c3aed', // Credits
+                '#cbd5e1'  // Take home
+              ],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const value = context.raw;
+                    const percentage = (value / income * 100).toFixed(1);
+                    return `${context.label}: ${formatCurrency(value)} (${percentage}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+      
+      // Initialize the calculator
+      countrySelect.dispatchEvent(new Event('change'));
+    });
+  </script>
+</body>
+</html>
