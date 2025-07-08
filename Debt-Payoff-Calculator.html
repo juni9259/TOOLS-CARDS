@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Advanced Debt Payoff Calculator to help you become debt-free faster. Compare payoff methods, visualize savings, and optimize your repayment strategy.">
+    <title>Advanced Debt Payoff Calculator | Optimize Your Repayment Plan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #0A2463;
+            --secondary: #3E92CC;
+            --accent: #FF715B;
+            --light: #F8F7F9;
+            --dark: #1E1E24;
+            --success: #2E8B57;
+            --warning: #FF9F1C;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--light);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .calculator-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: var(--secondary);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .debt-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(62, 146, 204, 0.2);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .results-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .chart-container {
+            height: 400px;
+            margin: 2rem 0;
+        }
+        
+        .strategy-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .strategy-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .strategy-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .strategy-card.recommended {
+            border: 2px solid var(--success);
+            position: relative;
+        }
+        
+        .recommended-badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .stat {
+            padding: 1rem;
+            background: rgba(62, 146, 204, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .debt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .debt-info {
+            flex: 1;
+        }
+        
+        .debt-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .delete-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .timeline-date {
+            font-weight: bold;
+            min-width: 120px;
+            color: var(--secondary);
+        }
+        
+        .timeline-content {
+            flex: 1;
+        }
+        
+        .timeline-amount {
+            font-weight: bold;
+            color: var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-container {
+                padding: 1rem;
+            }
+            
+            .debt-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .strategy-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="header">
+            <h1>Advanced Debt Payoff Calculator</h1>
+            <p class="subtitle">Optimize your repayment strategy and save money on interest</p>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="debt-input">Enter Debts</div>
+            <div class="tab" data-tab="strategy">Choose Strategy</div>
+            <div class="tab" data-tab="results">View Results</div>
+        </div>
+        
+        <div id="debt-input" class="tab-content active">
+            <div class="debt-form">
+                <div class="form-group">
+                    <label for="debt-name">Debt Name</label>
+                    <input type="text" id="debt-name" placeholder="e.g., Credit Card, Car Loan">
+                </div>
+                
+                <div class="form-group">
+                    <label for="debt-balance">Current Balance ($)</label>
+                    <input type="number" id="debt-balance" placeholder="5000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="interest-rate">Interest Rate (%)</label>
+                    <input type="number" id="interest-rate" placeholder="15.99" step="0.01">
+                </div>
+                
+                <div class="form-group">
+                    <label for="min-payment">Minimum Payment ($)</label>
+                    <input type="number" id="min-payment" placeholder="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="debt-type">Debt Type</label>
+                    <select id="debt-type">
+                        <option value="credit-card">Credit Card</option>
+                        <option value="personal-loan">Personal Loan</option>
+                        <option value="student-loan">Student Loan</option>
+                        <option value="auto-loan">Auto Loan</option>
+                        <option value="mortgage">Mortgage</option>
+                        <option value="medical">Medical Debt</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="debt-priority">Priority Level</label>
+                    <select id="debt-priority">
+                        <option value="high">High (Urgent)</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button id="add-debt" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Add Debt
+            </button>
+            
+            <div id="debt-list" style="margin-top: 2rem;">
+                <h3>Your Debts</h3>
+                <div id="debts-container"></div>
+                <p id="no-debts-message">No debts added yet. Add your first debt above.</p>
+            </div>
+            
+            <div class="form-group" style="margin-top: 2rem;">
+                <label for="extra-payment">Monthly Extra Payment ($)</label>
+                <input type="number" id="extra-payment" placeholder="200">
+                <small class="text-muted">Any additional amount you can put toward debt each month</small>
+            </div>
+            
+            <button id="calculate" class="btn btn-primary" style="margin-top: 1rem;">
+                <i class="fas fa-calculator"></i> Calculate Payoff Options
+            </button>
+        </div>
+        
+        <div id="strategy" class="tab-content">
+            <h2>Choose Your Payoff Strategy</h2>
+            <p>Select a method below to see how it affects your payoff timeline and interest paid.</p>
+            
+            <div class="strategy-comparison">
+                <div class="strategy-card recommended">
+                    <div class="recommended-badge">Recommended</div>
+                    <h3>Debt Avalanche</h3>
+                    <p>Pay off debts with the highest interest rates first. Saves the most money on interest.</p>
+                    <button class="btn btn-primary" data-strategy="avalanche">
+                        Select This Strategy
+                    </button>
+                </div>
+                
+                <div class="strategy-card">
+                    <h3>Debt Snowball</h3>
+                    <p>Pay off smallest balances first for quick wins and motivation.</p>
+                    <button class="btn btn-primary" data-strategy="snowball">
+                        Select This Strategy
+                    </button>
+                </div>
+                
+                <div class="strategy-card">
+                    <h3>Custom Order</h3>
+                    <p>Choose your own payoff order based on your priorities.</p>
+                    <button class="btn btn-primary" data-strategy="custom">
+                        Select This Strategy
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="results" class="tab-content">
+            <h2>Your Debt Payoff Plan</h2>
+            <p>Here's your optimized payoff strategy with projected results.</p>
+            
+            <div class="results-section" id="results-content">
+                <h3>Summary</h3>
+                <div class="summary-stats">
+                    <div class="stat">
+                        <div class="stat-label">Total Debt</div>
+                        <div class="stat-value" id="total-debt">$0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Payoff Time</div>
+                        <div class="stat-value" id="payoff-time">0 months</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Interest Saved</div>
+                        <div class="stat-value" id="interest-saved">$0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Total Interest</div>
+                        <div class="stat-value" id="total-interest">$0</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="payoff-chart"></canvas>
+                </div>
+                
+                <h3>Payoff Timeline</h3>
+                <div id="payoff-timeline">
+                    <!-- Timeline will be generated here -->
+                </div>
+                
+                <div class="btn-group" style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button id="save-plan-pdf" class="btn btn-success">
+                        <i class="fas fa-file-pdf"></i> Download as PDF
+                    </button>
+                    <button id="save-plan-excel" class="btn btn-success">
+                        <i class="fas fa-file-excel"></i> Export to Excel
+                    </button>
+                    <button id="print-plan" class="btn btn-primary">
+                        <i class="fas fa-print"></i> Print Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let debts = [];
+            let payoffPlan = [];
+            let selectedStrategy = '';
+            let chart = null;
+            const { jsPDF } = window.jspdf;
+            
+            // DOM elements
+            const debtNameInput = document.getElementById('debt-name');
+            const debtBalanceInput = document.getElementById('debt-balance');
+            const interestRateInput = document.getElementById('interest-rate');
+            const minPaymentInput = document.getElementById('min-payment');
+            const debtTypeSelect = document.getElementById('debt-type');
+            const debtPrioritySelect = document.getElementById('debt-priority');
+            const addDebtBtn = document.getElementById('add-debt');
+            const debtsContainer = document.getElementById('debts-container');
+            const noDebtsMessage = document.getElementById('no-debts-message');
+            const extraPaymentInput = document.getElementById('extra-payment');
+            const calculateBtn = document.getElementById('calculate');
+            const totalDebtEl = document.getElementById('total-debt');
+            const payoffTimeEl = document.getElementById('payoff-time');
+            const interestSavedEl = document.getElementById('interest-saved');
+            const totalInterestEl = document.getElementById('total-interest');
+            const payoffTimelineEl = document.getElementById('payoff-timeline');
+            const savePlanPdfBtn = document.getElementById('save-plan-pdf');
+            const savePlanExcelBtn = document.getElementById('save-plan-excel');
+            const printPlanBtn = document.getElementById('print-plan');
+            
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const tabId = tab.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Strategy selection
+            document.querySelectorAll('[data-strategy]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    selectedStrategy = this.getAttribute('data-strategy');
+                    calculatePayoffPlan();
+                    document.querySelector('.tab[data-tab="results"]').click();
+                });
+            });
+            
+            // Add debt
+            addDebtBtn.addEventListener('click', function() {
+                const name = debtNameInput.value.trim();
+                const balance = parseFloat(debtBalanceInput.value);
+                const interestRate = parseFloat(interestRateInput.value);
+                const minPayment = parseFloat(minPaymentInput.value);
+                const type = debtTypeSelect.value;
+                const priority = debtPrioritySelect.value;
+                
+                if (!name || isNaN(balance) || isNaN(interestRate) || isNaN(minPayment)) {
+                    alert('Please fill in all required fields with valid values');
+                    return;
+                }
+                
+                const debt = {
+                    id: Date.now(),
+                    name,
+                    balance,
+                    interestRate,
+                    minPayment,
+                    type,
+                    priority
+                };
+                
+                debts.push(debt);
+                renderDebts();
+                clearDebtForm();
+            });
+            
+            // Render debts list
+            function renderDebts() {
+                debtsContainer.innerHTML = '';
+                
+                if (debts.length === 0) {
+                    noDebtsMessage.style.display = 'block';
+                    return;
+                }
+                
+                noDebtsMessage.style.display = 'none';
+                
+                debts.forEach(debt => {
+                    const debtEl = document.createElement('div');
+                    debtEl.className = 'debt-item';
+                    debtEl.innerHTML = `
+                        <div class="debt-info">
+                            <strong>${debt.name}</strong> (${debt.type})
+                            <div>$${debt.balance.toFixed(2)} @ ${debt.interestRate}% APR</div>
+                            <small>Min payment: $${debt.minPayment.toFixed(2)}</small>
+                        </div>
+                        <div class="debt-actions">
+                            <button class="delete-btn" data-id="${debt.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    debtsContainer.appendChild(debtEl);
+                });
+                
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        debts = debts.filter(debt => debt.id !== id);
+                        renderDebts();
+                    });
+                });
+            }
+            
+            // Clear debt form
+            function clearDebtForm() {
+                debtNameInput.value = '';
+                debtBalanceInput.value = '';
+                interestRateInput.value = '';
+                minPaymentInput.value = '';
+                debtTypeSelect.value = 'credit-card';
+                debtPrioritySelect.value = 'medium';
+                debtNameInput.focus();
+            }
+            
+            // Calculate payoff plan
+            function calculatePayoffPlan() {
+                if (debts.length === 0) {
+                    alert('Please add at least one debt');
+                    return;
+                }
+                
+                const extraPayment = parseFloat(extraPaymentInput.value) || 0;
+                let totalMinimumPayment = debts.reduce((sum, debt) => sum + debt.minPayment, 0);
+                let totalMonthlyPayment = totalMinimumPayment + extraPayment;
+                
+                // Sort debts based on selected strategy
+                let sortedDebts = [...debts];
+                if (selectedStrategy === 'avalanche') {
+                    sortedDebts.sort((a, b) => b.interestRate - a.interestRate);
+                } else if (selectedStrategy === 'snowball') {
+                    sortedDebts.sort((a, b) => a.balance - b.balance);
+                }
+                // Custom order would require user input for ordering
+                
+                // Calculate payoff plan
+                payoffPlan = [];
+                let remainingDebts = sortedDebts.map(debt => ({
+                    ...debt,
+                    remainingBalance: debt.balance,
+                    paidInterest: 0
+                }));
+                
+                let month = 0;
+                let totalInterestPaid = 0;
+                
+                while (remainingDebts.length > 0) {
+                    month++;
+                    let monthlyPayment = totalMonthlyPayment;
+                    let monthPayments = [];
+                    let monthInterest = 0;
+                    
+                    // Process each debt in order
+                    for (let i = 0; i < remainingDebts.length; i++) {
+                        const debt = remainingDebts[i];
+                        const monthlyInterest = debt.remainingBalance * (debt.interestRate / 100 / 12);
+                        monthInterest += monthlyInterest;
+                        
+                        let paymentTowardsDebt = Math.min(
+                            monthlyPayment,
+                            debt.remainingBalance + monthlyInterest,
+                            i === 0 ? monthlyPayment : debt.minPayment
+                        );
+                        
+                        if (i === 0 && remainingDebts.length > 1) {
+                            // For the first debt, apply extra payment after min payments to others
+                            paymentTowardsDebt = Math.min(
+                                debt.minPayment + (monthlyPayment - remainingDebts.slice(1).reduce((sum, d) => sum + d.minPayment, 0)),
+                                debt.remainingBalance + monthlyInterest
+                            );
+                        }
+                        
+                        const principalPayment = Math.max(0, paymentTowardsDebt - monthlyInterest);
+                        debt.remainingBalance -= principalPayment;
+                        debt.paidInterest += monthlyInterest;
+                        
+                        monthPayments.push({
+                            debtId: debt.id,
+                            debtName: debt.name,
+                            payment: paymentTowardsDebt,
+                            interest: monthlyInterest,
+                            principal: principalPayment,
+                            remainingBalance: debt.remainingBalance
+                        });
+                        
+                        monthlyPayment -= paymentTowardsDebt;
+                        if (monthlyPayment <= 0) break;
+                    }
+                    
+                    totalInterestPaid += monthInterest;
+                    
+                    // Check for paid off debts
+                    remainingDebts = remainingDebts.filter(debt => debt.remainingBalance > 0);
+                    
+                    payoffPlan.push({
+                        month,
+                        payments: monthPayments,
+                        totalInterest: monthInterest,
+                        remainingDebts: remainingDebts.map(d => ({...d}))
+                    });
+                }
+                
+                // Calculate interest saved compared to minimum payments
+                let minPaymentMonths = 0;
+                let minPaymentInterest = 0;
+                let minPaymentRemainingDebts = sortedDebts.map(debt => ({
+                    ...debt,
+                    remainingBalance: debt.balance,
+                    paidInterest: 0
+                }));
+                
+                while (minPaymentRemainingDebts.length > 0 && minPaymentMonths < 600) { // Cap at 50 years
+                    minPaymentMonths++;
+                    let monthlyPayment = totalMinimumPayment;
+                    
+                    for (let i = 0; i < minPaymentRemainingDebts.length; i++) {
+                        const debt = minPaymentRemainingDebts[i];
+                        const monthlyInterest = debt.remainingBalance * (debt.interestRate / 100 / 12);
+                        minPaymentInterest += monthlyInterest;
+                        
+                        const paymentTowardsDebt = Math.min(
+                            monthlyPayment,
+                            debt.remainingBalance + monthlyInterest,
+                            debt.minPayment
+                        );
+                        
+                        const principalPayment = Math.max(0, paymentTowardsDebt - monthlyInterest);
+                        debt.remainingBalance -= principalPayment;
+                        debt.paidInterest += monthlyInterest;
+                        
+                        monthlyPayment -= paymentTowardsDebt;
+                        if (monthlyPayment <= 0) break;
+                    }
+                    
+                    minPaymentRemainingDebts = minPaymentRemainingDebts.filter(debt => debt.remainingBalance > 0);
+                }
+                
+                const interestSaved = minPaymentInterest - totalInterestPaid;
+                
+                // Update UI
+                const totalDebt = debts.reduce((sum, debt) => sum + debt.balance, 0);
+                totalDebtEl.textContent = `$${totalDebt.toFixed(2)}`;
+                payoffTimeEl.textContent = `${month} months (${(month / 12).toFixed(1)} years)`;
+                interestSavedEl.textContent = `$${interestSaved.toFixed(2)}`;
+                totalInterestEl.textContent = `$${totalInterestPaid.toFixed(2)}`;
+                
+                // Render chart
+                renderChart();
+                
+                // Render timeline
+                renderTimeline();
+            }
+            
+            // Render chart
+            function renderChart() {
+                const ctx = document.getElementById('payoff-chart').getContext('2d');
+                
+                if (chart) {
+                    chart.destroy();
+                }
+                
+                // Prepare data for chart
+                const labels = [];
+                const principalData = [];
+                const interestData = [];
+                
+                for (let i = 0; i < payoffPlan.length; i++) {
+                    if (i % Math.ceil(payoffPlan.length / 12) === 0 || i === payoffPlan.length - 1) {
+                        labels.push(`Month ${payoffPlan[i].month}`);
+                        let principal = 0;
+                        let interest = 0;
+                        
+                        payoffPlan[i].payments.forEach(payment => {
+                            principal += payment.principal;
+                            interest += payment.interest;
+                        });
+                        
+                        principalData.push(principal);
+                        interestData.push(interest);
+                    }
+                }
+                
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Principal',
+                                data: principalData,
+                                backgroundColor: 'rgba(62, 146, 204, 0.7)',
+                                borderColor: 'rgba(62, 146, 204, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Interest',
+                                data: interestData,
+                                backgroundColor: 'rgba(255, 113, 91, 0.7)',
+                                borderColor: 'rgba(255, 113, 91, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                stacked: true,
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Amount ($)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Monthly Payment Breakdown'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    afterBody: function(context) {
+                                        const dataIndex = context[0].dataIndex;
+                                        const actualIndex = dataIndex * Math.ceil(payoffPlan.length / 12);
+                                        const monthData = payoffPlan[Math.min(actualIndex, payoffPlan.length - 1)];
+                                        
+                                        let debtsPaid = '';
+                                        monthData.payments.forEach(p => {
+                                            if (p.remainingBalance <= 0) {
+                                                debtsPaid += `\n• Paid off: ${p.debtName}`;
+                                            }
+                                        });
+                                        
+                                        return debtsPaid;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Render timeline
+            function renderTimeline() {
+                payoffTimelineEl.innerHTML = '';
+                
+                // Show key milestones (every 3 months or when a debt is paid off)
+                for (let i = 0; i < payoffPlan.length; i++) {
+                    const monthData = payoffPlan[i];
+                    const showMonth = i % 3 === 0 || i === 0 || i === payoffPlan.length - 1 || 
+                                      monthData.payments.some(p => p.remainingBalance <= 0);
+                    
+                    if (showMonth) {
+                        const timelineItem = document.createElement('div');
+                        timelineItem.className = 'timeline-item';
+                        
+                        let paymentsHtml = '';
+                        let paidOffDebts = [];
+                        
+                        monthData.payments.forEach(p => {
+                            paymentsHtml += `
+                                <div>
+                                    <strong>${p.debtName}</strong>: 
+                                    $${p.payment.toFixed(2)} 
+                                    (Principal: $${p.principal.toFixed(2)}, Interest: $${p.interest.toFixed(2)})
+                                    <br>Remaining: $${p.remainingBalance.toFixed(2)}
+                                </div>
+                            `;
+                            
+                            if (p.remainingBalance <= 0) {
+                                paidOffDebts.push(p.debtName);
+                            }
+                        });
+                        
+                        let paidOffText = '';
+                        if (paidOffDebts.length > 0) {
+                            paidOffText = `<div style="color: var(--success); font-weight: bold; margin-top: 0.5rem;">
+                                🎉 Paid off: ${paidOffDebts.join(', ')}
+                            </div>`;
+                        }
+                        
+                        timelineItem.innerHTML = `
+                            <div class="timeline-date">Month ${monthData.month}</div>
+                            <div class="timeline-content">
+                                ${paymentsHtml}
+                                <div style="margin-top: 0.5rem;">
+                                    <strong>Total Interest:</strong> $${monthData.totalInterest.toFixed(2)}
+                                </div>
+                                ${paidOffText}
+                            </div>
+                        `;
+                        
+                        payoffTimelineEl.appendChild(timelineItem);
+                    }
+                }
+            }
+            
+            // Calculate button
+            calculateBtn.addEventListener('click', function() {
+                if (debts.length === 0) {
+                    alert('Please add at least one debt');
+                    return;
+                }
+                document.querySelector('.tab[data-tab="strategy"]').click();
+            });
+            
+            // Save as PDF
+            savePlanPdfBtn.addEventListener('click', function() {
+                if (payoffPlan.length === 0) {
+                    alert('No payoff plan to save. Please calculate a plan first.');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Add title
+                doc.setFontSize(20);
+                doc.setTextColor(10, 36, 99);
+                doc.text('Debt Payoff Plan', 105, 20, { align: 'center' });
+                
+                // Add summary
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Total Debt: $${debts.reduce((sum, debt) => sum + debt.balance, 0).toFixed(2)}`, 20, 40);
+                doc.text(`Payoff Time: ${payoffPlan.length} months (${(payoffPlan.length / 12).toFixed(1)} years)`, 20, 50);
+                doc.text(`Total Interest: $${payoffPlan.reduce((sum, month) => sum + month.totalInterest, 0).toFixed(2)}`, 20, 60);
+                
+                // Add strategy info
+                doc.text(`Strategy: ${selectedStrategy === 'avalanche' ? 'Debt Avalanche (Highest Interest First)' : 
+                          selectedStrategy === 'snowball' ? 'Debt Snowball (Smallest Balance First)' : 'Custom Order'}`, 20, 70);
+                
+                // Add debts table
+                doc.setFontSize(14);
+                doc.text('Your Debts:', 20, 90);
+                
+                doc.autoTable({
+                    startY: 95,
+                    head: [['Name', 'Balance', 'Interest Rate', 'Min Payment']],
+                    body: debts.map(debt => [
+                        debt.name,
+                        `$${debt.balance.toFixed(2)}`,
+                        `${debt.interestRate}%`,
+                        `$${debt.minPayment.toFixed(2)}`
+                    ]),
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [10, 36, 99]
+                    }
+                });
+                
+                // Add timeline
+                doc.setFontSize(14);
+                doc.text('Payoff Timeline:', 20, doc.autoTable.previous.finalY + 20);
+                
+                let yPos = doc.autoTable.previous.finalY + 25;
+                let page = 1;
+                
+                for (let i = 0; i < payoffPlan.length; i += 3) {
+                    if (yPos > 250 && i < payoffPlan.length - 1) {
+                        doc.addPage();
+                        yPos = 20;
+                        page++;
+                    }
+                    
+                    const monthData = payoffPlan[i];
+                    doc.setFontSize(12);
+                    doc.setTextColor(10, 36, 99);
+                    doc.text(`Month ${monthData.month}`, 20, yPos);
+                    
+                    doc.setFontSize(10);
+                    doc.setTextColor(0, 0, 0);
+                    yPos += 7;
+                    
+                    monthData.payments.forEach(p => {
+                        doc.text(
+                            `${p.debtName}: $${p.payment.toFixed(2)} (Principal: $${p.principal.toFixed(2)}, Interest: $${p.interest.toFixed(2)})`,
+                            25, yPos
+                        );
+                        yPos += 7;
+                        
+                        if (p.remainingBalance <= 0) {
+                            doc.setTextColor(46, 139, 87);
+                            doc.text(`🎉 Paid off: ${p.debtName}`, 25, yPos);
+                            doc.setTextColor(0, 0, 0);
+                            yPos += 7;
+                        }
+                    });
+                    
+                    doc.text(`Total Interest: $${monthData.totalInterest.toFixed(2)}`, 25, yPos);
+                    yPos += 10;
+                    
+                    // Check for paid off debts
+                    const paidOff = monthData.payments.filter(p => p.remainingBalance <= 0);
+                    if (paidOff.length > 0) {
+                        doc.setTextColor(46, 139, 87);
+                        doc.text(`Debts Paid Off: ${paidOff.map(p => p.debtName).join(', ')}`, 20, yPos);
+                        doc.setTextColor(0, 0, 0);
+                        yPos += 10;
+                    }
+                    
+                    yPos += 5;
+                }
+                
+                // Save the PDF
+                doc.save('Debt_Payoff_Plan.pdf');
+            });
+            
+            // Export to Excel (simplified version)
+            savePlanExcelBtn.addEventListener('click', function() {
+                if (payoffPlan.length === 0) {
+                    alert('No payoff plan to export. Please calculate a plan first.');
+                    return;
+                }
+                
+                // Create CSV content
+                let csvContent = "data:text/csv;charset=utf-8,";
+                
+                // Add header
+                csvContent += "Month,Debt Name,Payment,Principal,Interest,Remaining Balance,Status\n";
+                
+                // Add data
+                payoffPlan.forEach(month => {
+                    month.payments.forEach(payment => {
+                        const status = payment.remainingBalance <= 0 ? "Paid Off" : "Active";
+                        csvContent += `${month.month},${payment.debtName},${payment.payment.toFixed(2)},${payment.principal.toFixed(2)},${payment.interest.toFixed(2)},${payment.remainingBalance.toFixed(2)},${status}\n`;
+                    });
+                });
+                
+                // Create download link
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "debt_payoff_plan.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            
+            // Print plan
+            printPlanBtn.addEventListener('click', function() {
+                window.print();
+            });
+        });
+    </script>
+</body>
+</html>
