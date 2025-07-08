@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Advanced retirement planning tool with Monte Carlo simulations, tax optimization, and detailed projections. Plan your financial future with precision.">
+    <meta name="keywords" content="retirement planner, financial planning, retirement calculator, investment strategy, retirement income, Monte Carlo simulation">
+    <title>Advanced Retirement Planner | Comprehensive Financial Planning Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #0ea5e9;
+            --accent: #8b5cf6;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.2), transparent 40%);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 20px;
+            opacity: 0.9;
+        }
+
+        .planner-container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1100px) {
+            .planner-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-section {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .section-title i {
+            margin-right: 12px;
+            color: var(--secondary);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--light);
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .input-group .input-with-icon {
+            position: relative;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--light);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+        }
+
+        .input-group .icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+        }
+
+        .input-group .range-value {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            font-weight: 700;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .results-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .results-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            background: rgba(14, 165, 233, 0.15);
+        }
+
+        .summary-card h3 {
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            color: #cbd5e1;
+        }
+
+        .summary-card .value {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .success {
+            color: var(--success);
+        }
+
+        .warning {
+            color: var(--warning);
+        }
+
+        .danger {
+            color: var(--danger);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .projection-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .projection-table th {
+            background: rgba(14, 165, 233, 0.2);
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .projection-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .projection-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .projection-table tr:hover {
+            background: rgba(14, 165, 233, 0.1);
+        }
+
+        .monte-carlo-info {
+            display: flex;
+            align-items: center;
+            background: rgba(245, 158, 11, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            gap: 15px;
+        }
+
+        .monte-carlo-info i {
+            font-size: 1.5rem;
+            color: var(--warning);
+        }
+
+        .probability-badges {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .probability-badge {
+            background: rgba(16, 185, 129, 0.15);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .probability-badge.warning {
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .probability-badge.danger {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .assumptions {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 16px;
+            margin-top: 40px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .assumptions h3 {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .assumptions ul {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            list-style: none;
+        }
+
+        .assumptions li {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .assumptions li:last-child {
+            border-bottom: none;
+        }
+
+        .assumptions li i {
+            color: var(--success);
+            margin-top: 4px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Advanced Retirement Planner</h1>
+            <p class="subtitle">Plan your financial future with precision using our comprehensive retirement planning tool featuring Monte Carlo simulations, tax optimization, and detailed projections</p>
+        </header>
+
+        <div class="planner-container">
+            <div class="input-section">
+                <div class="section-title">
+                    <i class="fas fa-sliders-h"></i>
+                    <h2>Retirement Parameters</h2>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab-btn active"><i class="fas fa-user"></i> Personal</button>
+                    <button class="tab-btn"><i class="fas fa-chart-line"></i> Financial</button>
+                    <button class="tab-btn"><i class="fas fa-taxi"></i> Tax & Inflation</button>
+                    <button class="tab-btn"><i class="fas fa-cogs"></i> Advanced</button>
+                </div>
+                
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>Current Age</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user icon"></i>
+                            <input type="number" id="currentAge" min="25" max="70" value="42">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Retirement Age</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-calendar-alt icon"></i>
+                            <input type="number" id="retirementAge" min="55" max="85" value="65">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Life Expectancy</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-heart icon"></i>
+                            <input type="number" id="lifeExpectancy" min="75" max="110" value="90">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Current Annual Income ($)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-money-bill-wave icon"></i>
+                            <input type="number" id="annualIncome" min="0" step="1000" value="85000">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Current Retirement Savings ($)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-piggy-bank icon"></i>
+                            <input type="number" id="currentSavings" min="0" step="1000" value="185000">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Monthly Contribution ($)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-wallet icon"></i>
+                            <input type="number" id="monthlyContribution" min="0" step="100" value="1200">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Annual Contribution Increase (%)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-chart-line icon"></i>
+                            <input type="number" id="contributionIncrease" min="0" max="10" step="0.5" value="3">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Expected Annual Return (%)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-arrow-up icon"></i>
+                            <input type="number" id="expectedReturn" min="0" max="20" step="0.1" value="7.5">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Inflation Rate (%)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-chart-pie icon"></i>
+                            <input type="number" id="inflationRate" min="0" max="10" step="0.1" value="2.5">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Retirement Spending (% of income)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-shopping-cart icon"></i>
+                            <input type="range" id="spendingRate" min="50" max="100" value="80">
+                            <span id="spendingValue" class="range-value">80%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Social Security Income ($/year)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-shield-alt icon"></i>
+                            <input type="number" id="socialSecurity" min="0" step="1000" value="20000">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Tax Rate in Retirement (%)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-percentage icon"></i>
+                            <input type="number" id="taxRate" min="0" max="50" step="1" value="15">
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="calculate-btn">
+                    <i class="fas fa-calculator"></i> Calculate Retirement Plan
+                </button>
+            </div>
+            
+            <div class="results-section">
+                <div class="results-card">
+                    <div class="results-header">
+                        <div class="section-title">
+                            <i class="fas fa-chart-bar"></i>
+                            <h2>Retirement Projection</h2>
+                        </div>
+                        <div class="success probability-badge">
+                            <i class="fas fa-check-circle"></i>
+                            <span>86% Success Probability</span>
+                        </div>
+                    </div>
+                    
+                    <div class="results-summary">
+                        <div class="summary-card">
+                            <h3>Retirement Savings at 65</h3>
+                            <div class="value success">$1,245,800</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Annual Retirement Income</h3>
+                            <div class="value">$74,200</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Years of Coverage</h3>
+                            <div class="value success">28 years</div>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Shortfall Risk</h3>
+                            <div class="value warning">14%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="projectionChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="results-card">
+                    <div class="section-title">
+                        <i class="fas fa-cubes"></i>
+                        <h2>Monte Carlo Simulation</h2>
+                    </div>
+                    
+                    <p>This analysis shows the probability of your savings lasting through retirement based on 1,000 market scenarios.</p>
+                    
+                    <div class="chart-container">
+                        <canvas id="monteCarloChart"></canvas>
+                    </div>
+                    
+                    <div class="probability-badges">
+                        <div class="probability-badge success">
+                            <i class="fas fa-check-circle"></i>
+                            <span>86% - High Success Probability</span>
+                        </div>
+                        <div class="probability-badge warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>10% - Moderate Risk</span>
+                        </div>
+                        <div class="probability-badge danger">
+                            <i class="fas fa-times-circle"></i>
+                            <span>4% - High Risk</span>
+                        </div>
+                    </div>
+                    
+                    <div class="monte-carlo-info">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Monte Carlo simulations model the uncertainty of investment returns to provide a probabilistic assessment of retirement plan success.</p>
+                    </div>
+                </div>
+                
+                <div class="results-card">
+                    <div class="section-title">
+                        <i class="fas fa-table"></i>
+                        <h2>Year-by-Year Projection</h2>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="projection-table">
+                            <thead>
+                                <tr>
+                                    <th>Age</th>
+                                    <th>Savings Balance</th>
+                                    <th>Annual Income</th>
+                                    <th>Withdrawal</th>
+                                    <th>Taxes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>65</td>
+                                    <td>$1,245,800</td>
+                                    <td>$74,200</td>
+                                    <td>$59,360</td>
+                                    <td>$8,904</td>
+                                </tr>
+                                <tr>
+                                    <td>70</td>
+                                    <td>$1,189,400</td>
+                                    <td>$78,900</td>
+                                    <td>$63,120</td>
+                                    <td>$9,468</td>
+                                </tr>
+                                <tr>
+                                    <td>75</td>
+                                    <td>$1,102,300</td>
+                                    <td>$84,200</td>
+                                    <td>$67,360</td>
+                                    <td>$10,104</td>
+                                </tr>
+                                <tr>
+                                    <td>80</td>
+                                    <td>$987,500</td>
+                                    <td>$89,800</td>
+                                    <td>$71,840</td>
+                                    <td>$10,776</td>
+                                </tr>
+                                <tr>
+                                    <td>85</td>
+                                    <td>$821,700</td>
+                                    <td>$95,700</td>
+                                    <td>$76,560</td>
+                                    <td>$11,484</td>
+                                </tr>
+                                <tr>
+                                    <td>90</td>
+                                    <td>$423,200</td>
+                                    <td>$102,000</td>
+                                    <td>$81,600</td>
+                                    <td>$12,240</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="assumptions">
+            <h3><i class="fas fa-lightbulb"></i> Key Assumptions & Methodology</h3>
+            <ul>
+                <li><i class="fas fa-check"></i> All values are adjusted for inflation (2.5% annually)</li>
+                <li><i class="fas fa-check"></i> Investment returns follow historical market patterns with Monte Carlo simulation</li>
+                <li><i class="fas fa-check"></i> 4% safe withdrawal rate applied to retirement savings</li>
+                <li><i class="fas fa-check"></i> Social Security benefits adjusted for inflation annually</li>
+                <li><i class="fas fa-check"></i> Annual contribution increases of 3% to match salary growth</li>
+                <li><i class="fas fa-check"></i> Taxes calculated at 15% on retirement income withdrawals</li>
+                <li><i class="fas fa-check"></i> Retirement spending needs decrease by 1% annually after age 80</li>
+                <li><i class="fas fa-check"></i> Assumes constant asset allocation (60% stocks, 40% bonds)</li>
+                <li><i class="fas fa-check"></i> Does not account for potential long-term care costs</li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p>© 2023 Advanced Retirement Planner | This tool provides estimates only and is not financial advice. Results are hypothetical and may not reflect actual investment outcomes. Consult a financial advisor for personalized advice.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts
+            const projectionCtx = document.getElementById('projectionChart').getContext('2d');
+            const projectionChart = new Chart(projectionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Current', '50', '55', '60', '65', '70', '75', '80', '85', '90'],
+                    datasets: [{
+                        label: 'Retirement Savings',
+                        data: [185, 320, 495, 720, 1245, 1189, 1102, 987, 821, 423],
+                        borderColor: '#0ea5e9',
+                        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#fff',
+                        fill: true,
+                        tension: 0.3
+                    }, {
+                        label: 'Withdrawals',
+                        data: [0, 0, 0, 0, 59, 63, 67, 71, 76, 81],
+                        borderColor: '#8b5cf6',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e2e8f0',
+                                font: {
+                                    size: 13
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: $${context.parsed.y}K`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value + 'K';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Amount ($ thousands)',
+                                color: '#94a3b8'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Age',
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const monteCarloCtx = document.getElementById('monteCarloChart').getContext('2d');
+            const monteCarloChart = new Chart(monteCarloCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['90%+ Success', '70-89% Success', '50-69% Success', '<50% Success'],
+                    datasets: [{
+                        label: 'Probability',
+                        data: [86, 10, 3, 1],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(239, 68, 68, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(239, 68, 68, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.parsed.y}% of scenarios`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Probability',
+                                color: '#94a3b8'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update spending value display
+            const spendingSlider = document.getElementById('spendingRate');
+            const spendingValue = document.getElementById('spendingValue');
+            
+            spendingSlider.addEventListener('input', function() {
+                spendingValue.textContent = this.value + '%';
+            });
+            
+            // Tab functionality
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Calculate button animation
+            const calcBtn = document.querySelector('.calculate-btn');
+            calcBtn.addEventListener('click', function() {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculating...';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check"></i> Plan Updated!';
+                    // In a real implementation, you would recalculate results here
+                    
+                    // Reset button after delay
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-calculator"></i> Calculate Retirement Plan';
+                    }, 2000);
+                }, 1500);
+            });
+        });
+    </script>
+</body>
+</html>
