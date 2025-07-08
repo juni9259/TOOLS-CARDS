@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Saving Goal Tracker | Smart Financial Planning</title>
+    <meta name="description" content="Track and achieve your financial goals with our smart savings tracker tool">
+    <style>
+        :root {
+            --primary: #0A2463;
+            --secondary: #3E92CC;
+            --accent: #FF6B6B;
+            --success: #2ECC71;
+            --light: #F8F9FA;
+            --dark: #212529;
+            --glass: rgba(255, 255, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .goal-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .goal-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            border: 1px solid var(--glass);
+            transition: transform 0.3s ease;
+        }
+
+        .goal-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .goal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .goal-amount {
+            font-size: 1.1rem;
+            color: var(--dark);
+        }
+
+        .progress-container {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(90deg, var(--secondary), var(--success));
+            transition: width 0.5s ease;
+        }
+
+        .goal-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .goal-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .goal-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Savings Goal Tracker</h1>
+            <button class="btn btn-primary" id="addGoalBtn">+ New Goal</button>
+        </header>
+
+        <div class="goal-cards" id="goalContainer">
+            <!-- Goals will be added here dynamically -->
+            <div class="empty-state" id="emptyState">
+                <h2>No savings goals yet</h2>
+                <p>Start by adding your first savings goal</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Goal Modal -->
+    <div class="modal" id="goalModal">
+        <div class="modal-content">
+            <h2>Add New Savings Goal</h2>
+            <form id="goalForm">
+                <div class="form-group">
+                    <label for="goalName">Goal Name</label>
+                    <input type="text" id="goalName" required placeholder="e.g. Vacation, New Car">
+                </div>
+                <div class="form-group">
+                    <label for="targetAmount">Target Amount ($)</label>
+                    <input type="number" id="targetAmount" required min="1">
+                </div>
+                <div class="form-group">
+                    <label for="currentAmount">Current Amount ($)</label>
+                    <input type="number" id="currentAmount" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="deadline">Target Date</label>
+                    <input type="date" id="deadline" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const addGoalBtn = document.getElementById('addGoalBtn');
+            const goalModal = document.getElementById('goalModal');
+            const goalForm = document.getElementById('goalForm');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const goalContainer = document.getElementById('goalContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            // Load goals from localStorage
+            let goals = JSON.parse(localStorage.getItem('savingsGoals')) || [];
+
+            // Display existing goals
+            renderGoals();
+
+            // Event Listeners
+            addGoalBtn.addEventListener('click', () => {
+                goalModal.classList.add('active');
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                goalModal.classList.remove('active');
+                goalForm.reset();
+            });
+
+            goalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const goalName = document.getElementById('goalName').value;
+                const targetAmount = parseFloat(document.getElementById('targetAmount').value);
+                const currentAmount = parseFloat(document.getElementById('currentAmount').value) || 0;
+                const deadline = document.getElementById('deadline').value;
+                
+                const newGoal = {
+                    id: Date.now().toString(),
+                    name: goalName,
+                    targetAmount: targetAmount,
+                    currentAmount: currentAmount,
+                    deadline: deadline,
+                    createdAt: new Date().toISOString()
+                };
+                
+                goals.push(newGoal);
+                saveGoals();
+                renderGoals();
+                
+                goalModal.classList.remove('active');
+                goalForm.reset();
+            });
+
+            // Functions
+            function renderGoals() {
+                if (goals.length === 0) {
+                    emptyState.style.display = 'block';
+                    goalContainer.innerHTML = '';
+                    goalContainer.appendChild(emptyState);
+                    return;
+                }
+                
+                emptyState.style.display = 'none';
+                goalContainer.innerHTML = '';
+                
+                goals.forEach(goal => {
+                    const progress = (goal.currentAmount / goal.targetAmount) * 100;
+                    const progressWidth = progress > 100 ? 100 : progress;
+                    
+                    const deadlineDate = new Date(goal.deadline);
+                    const today = new Date();
+                    const daysLeft = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+                    
+                    const goalCard = document.createElement('div');
+                    goalCard.className = 'goal-card';
+                    goalCard.innerHTML = `
+                        <div class="goal-header">
+                            <h3 class="goal-title">${goal.name}</h3>
+                            <div class="goal-amount">$${goal.currentAmount.toLocaleString()} / $${goal.targetAmount.toLocaleString()}</div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: ${progressWidth}%"></div>
+                        </div>
+                        <div class="goal-details">
+                            <span>${progressWidth.toFixed(1)}% completed</span>
+                            <span>${daysLeft} days left</span>
+                        </div>
+                        <div class="goal-actions">
+                            <button class="btn btn-sm btn-outline" onclick="editGoal('${goal.id}')">Edit</button>
+                            <button class="btn btn-sm btn-primary" onclick="addToGoal('${goal.id}')">Add $</button>
+                        </div>
+                    `;
+                    
+                    goalContainer.appendChild(goalCard);
+                });
+            }
+
+            function saveGoals() {
+                localStorage.setItem('savingsGoals', JSON.stringify(goals));
+            }
+
+            // Expose functions to global scope for button clicks
+            window.editGoal = function(id) {
+                const goal = goals.find(g => g.id === id);
+                if (goal) {
+                    document.getElementById('goalName').value = goal.name;
+                    document.getElementById('targetAmount').value = goal.targetAmount;
+                    document.getElementById('currentAmount').value = goal.currentAmount;
+                    document.getElementById('deadline').value = goal.deadline;
+                    
+                    // For simplicity, we'll remove and readd the goal
+                    // In a full app, you'd have proper edit functionality
+                    goals = goals.filter(g => g.id !== id);
+                    goalModal.classList.add('active');
+                }
+            };
+
+            window.addToGoal = function(id) {
+                const amount = prompt('How much would you like to add to this goal?');
+                if (amount && !isNaN(amount)) {
+                    const goal = goals.find(g => g.id === id);
+                    if (goal) {
+                        goal.currentAmount += parseFloat(amount);
+                        saveGoals();
+                        renderGoals();
+                    }
+                }
+            };
+        });
+    </script>
+</body>
+</html>
